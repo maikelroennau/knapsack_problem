@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 """
 GA()
@@ -16,10 +17,9 @@ GA()
 """
 
 
-def find_solution(max_generations, population_size, max_capacity):
+def find_solution(max_generations, population_size, max_capacity, backpack):
     
     population = generate_population(population_size, max_capacity)
-    print population
     # fitness = calculate_fitness(population)
 
     # for i in range(max_generations):
@@ -29,8 +29,7 @@ def find_solution(max_generations, population_size, max_capacity):
 def generate_population(population_size, max_capacity):
     return np.random.randint(2, size=(max_capacity, population_size))
 
-def calculate_fitness(population):
-    # Select the ones with the highest value
+def calculate_fitness(backpack, population):
     return ''
 
 def apply_crossover():
@@ -50,6 +49,12 @@ if __name__ == "__main__":
     population_size = 200
     max_capacity = 10
     max_generations = 1000
-    
 
-    find_solution(max_generations, population_size, max_capacity)
+
+    backpack = []
+
+    for i in range(max_capacity):
+        backpack.append((random.randint(1, 50), random.randint(1, 100)))
+
+
+    find_solution(max_generations, population_size, max_capacity, backpack)
