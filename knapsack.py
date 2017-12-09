@@ -1,5 +1,5 @@
 import numpy as np
-import random
+from numpy import random
 import collections
 
 """
@@ -18,16 +18,17 @@ GA()
 """
 
 
-def find_solution(backpack, backpack_capacity, max_backpack_weight, population_size, max_generations):
+def find_solution(backpack, backpack_capacity, max_backpack_weight, max_backpack_value, population_size, max_generations):
     population = generate_population(population_size, backpack_capacity)
-    population = calculate_fitness(population, population_size, backpack, backpack_capacity, max_backpack_weight)
+    population = calculate_fitness(population, population_size, backpack, backpack_capacity, max_backpack_value, max_backpack_weight)
+    parent_selection(population, population_size, max_backpack_value)
 
-    for p in population:
-        print p.weight, p.value, p.fitness
+    # for p in population:
+        # print p
 
 def generate_population(population_size, backpack_capacity):
     population = []
-    cromossomes = np.random.randint(2, size=(population_size, backpack_capacity))
+    cromossomes = random.randint(2, size=(population_size, backpack_capacity))
 
     for i in range(population_size):
         population.append(Individual(cromossome=cromossomes[i], weight=-1, value=-1, fitness=-1))
@@ -35,10 +36,10 @@ def generate_population(population_size, backpack_capacity):
     return population
 
 
-def calculate_fitness(population, population_size, backpack, backpack_capacity, max_backpack_weight):
-    weight = -1
-    value = -1
-    fitness = -1.
+def calculate_fitness(population, population_size, backpack, backpack_capacity, max_backpack_value, max_backpack_weight):
+    weight = 0
+    value = 0
+    fitness = 0
 
     for i in range(population_size):
         for j in range(backpack_capacity):
@@ -46,17 +47,37 @@ def calculate_fitness(population, population_size, backpack, backpack_capacity, 
                 weight += backpack[j].weight
                 value += backpack[j].value
 
-        fitness = round(1-(float(weight) / float(value)), 4)
+        fitness = round(((float(value) * 100.0) / float( max_backpack_value)) / 100, 4)
 
         if fitness < 0:
             fitness = 0
 
         population[i] = Individual(cromossome=population[i].cromossome, weight=weight, value=value, fitness=fitness)
-        weight = -1
-        value = -1
-        fitness = -1
+        weight = 0
+        value = 0
+        fitness = 0
+
+    population.sort(key=lambda x: x[3], reverse=True) 
 
     return population
+
+def parent_selection(population, population_size, max_backpack_value):
+    parents = []
+    fitness_sum = 0
+    threshold = 0
+
+    for individual in population:
+        fitness_sum += individual.fitness
+
+    threshold = random.randint(0, round(fitness_sum, 1)) / 100.0
+    fitness_sum = round(fitness_sum / 100.0, 4)
+
+    for individual in population:
+        if individual.fitness >= threshold:
+            parents.append(individual)
+
+    return parents
+
 
 def apply_crossover():
     pass
@@ -64,33 +85,20 @@ def apply_crossover():
 def apply_mutation():
     pass
 
-def survivals_selection(population):
-    return ''
-
 def show_best_solution():
     pass
 
-def calculate_total_weight_and_value(individual, backpack):
-    weight = 0
-    value = 0
-
-    for i, item in enumerate(individual):
-        if item == 1:
-            weight += backpack[i].weight
-            value += backpack[i].value
-
-    return weight, value
-
 
 if __name__ == "__main__":
-    population_size = 200
-    backpack_capacity = 10
-    max_backpack_weight = 70
     max_generations = 500
 
+    backpack_capacity = 20
+    max_backpack_weight = 70
+    max_backpack_value = 0
     backpack = []
     Item = collections.namedtuple('backpack', 'weight value')
 
+    population_size = 200
     population = []
     Individual = collections.namedtuple('population', 'cromossome weight value fitness')
 
@@ -98,4 +106,10 @@ if __name__ == "__main__":
     for i in range(backpack_capacity):
         backpack.append(Item(weight=random.randint(1, 50), value=random.randint(0, 100)))
 
-    find_solution(backpack, backpack_capacity, max_backpack_weight, population_size, max_generations)
+
+    for item in backpack:
+        max_backpack_value += item.value
+
+    print max_backpack_value
+
+    find_solution(backpack, backpack_capacity, max_backpack_weight, max_backpack_value, population_size, max_generations)
