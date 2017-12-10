@@ -1,6 +1,12 @@
-import numpy as np
-from numpy import random
 import collections
+
+import matplotlib.pyplot as plt
+from numpy import random
+from numpy.random import randint
+
+from utils import (apply_crossover, apply_mutation, calculate_fitness,
+                   generate_population, parent_selection)
+
 
 """
 GA()
@@ -18,98 +24,70 @@ GA()
 """
 
 
-def find_solution(backpack, backpack_capacity, max_backpack_weight, max_backpack_value, population_size, max_generations):
-    population = generate_population(population_size, backpack_capacity)
-    population = calculate_fitness(population, population_size, backpack, backpack_capacity, max_backpack_value, max_backpack_weight)
-    parent_selection(population, population_size, max_backpack_value)
+def find_solution(population):
+    # print 'Finding     ', population[0]
+    fitnessed_population = calculate_fitness(population, population_size, backpack, backpack_capacity, max_backpack_weight, max_backpack_value)
+    # print 'Fitnessed   ', fitnessed_population[0]
+    selected_parents = parent_selection(fitnessed_population, population_size)
+    # print 'Selected    ', selected_parents[0]
+    # print 'Selected_2  ', selected_parents[-1]
+    # print 'Selected_3  ', len(selected_parents)
+    crossovered_population = apply_crossover(selected_parents, population_size, backpack_capacity, crossover_probability)
+    # print 'Crossovered ', crossovered_population[0]
+    mutated_population = apply_mutation(crossovered_population, population_size, backpack_capacity, mutation_probability)
+    # print 'Mutated     ', mutated_population[0]
 
-    # for p in population:
-        # print p
-
-def generate_population(population_size, backpack_capacity):
-    population = []
-    cromossomes = random.randint(2, size=(population_size, backpack_capacity))
-
-    for i in range(population_size):
-        population.append(Individual(cromossome=cromossomes[i], weight=-1, value=-1, fitness=-1))
-
-    return population
-
-
-def calculate_fitness(population, population_size, backpack, backpack_capacity, max_backpack_value, max_backpack_weight):
-    weight = 0
-    value = 0
-    fitness = 0
-
-    for i in range(population_size):
-        for j in range(backpack_capacity):
-            if population[i].cromossome[j] == 1 and weight + backpack[j].weight <= max_backpack_weight:
-                weight += backpack[j].weight
-                value += backpack[j].value
-
-        fitness = round(((float(value) * 100.0) / float( max_backpack_value)) / 100, 4)
-
-        if fitness < 0:
-            fitness = 0
-
-        population[i] = Individual(cromossome=population[i].cromossome, weight=weight, value=value, fitness=fitness)
-        weight = 0
-        value = 0
-        fitness = 0
-
-    population.sort(key=lambda x: x[3], reverse=True) 
-
-    return population
-
-def parent_selection(population, population_size, max_backpack_value):
-    parents = []
-    fitness_sum = 0
-    threshold = 0
-
-    for individual in population:
-        fitness_sum += individual.fitness
-
-    threshold = random.randint(0, round(fitness_sum, 1)) / 100.0
-    fitness_sum = round(fitness_sum / 100.0, 4)
-
-    for individual in population:
-        if individual.fitness >= threshold:
-            parents.append(individual)
-
-    return parents
-
-
-def apply_crossover():
-    pass
-
-def apply_mutation():
-    pass
-
-def show_best_solution():
-    pass
+    return fitnessed_population
 
 
 if __name__ == "__main__":
-    max_generations = 500
+    max_generations = 10000
 
     backpack_capacity = 20
-    max_backpack_weight = 70
+    max_backpack_weight = 100
     max_backpack_value = 0
     backpack = []
+    population_size = 500
+
+    crossover_probability = 0.85
+    mutation_probability = 0.1
+
     Item = collections.namedtuple('backpack', 'weight value')
-
-    population_size = 200
-    population = []
-    Individual = collections.namedtuple('population', 'cromossome weight value fitness')
-
+    Individual = collections.namedtuple(
+        'population', 'cromossome weight value fitness')
 
     for i in range(backpack_capacity):
-        backpack.append(Item(weight=random.randint(1, 50), value=random.randint(0, 100)))
-
+        backpack.append(Item(weight=randint(1, 15), value=randint(0, 100)))
 
     for item in backpack:
         max_backpack_value += item.value
 
-    print max_backpack_value
+    random.seed(22)
+    evolved_population = generate_population(population_size, backpack_capacity)
 
-    find_solution(backpack, backpack_capacity, max_backpack_weight, max_backpack_value, population_size, max_generations)
+    xdata = []
+    ydata = []
+    plt.show()
+
+    axes = plt.gca()
+    axes.set_xlim(0, max_generations)
+    axes.set_ylim(0, +max_backpack_value)
+    line, = axes.plot(xdata, ydata, 'r-')
+
+    for i in range(max_generations):
+        evolved_population = find_solution(evolved_population)
+        print i
+
+        highest_fitness = 0
+        for individual in evolved_population:
+            if individual.value > highest_fitness:
+                highest_fitness = individual.value
+
+        xdata.append(i)
+        ydata.append(highest_fitness)
+        line.set_xdata(xdata)
+        line.set_ydata(ydata)
+        plt.draw()
+
+    plt.show()
+
