@@ -4,7 +4,7 @@ from numpy import concatenate
 from numpy.random import randint
 
 Item = collections.namedtuple('backpack', 'weight value')
-Individual = collections.namedtuple('population', 'cromossome weight value fitness')
+Individual = collections.namedtuple('population', 'cromossome weight value')
 
 
 def generate_population(population_size, backpack_capacity):
@@ -13,7 +13,7 @@ def generate_population(population_size, backpack_capacity):
 
     for i in range(population_size):
         population.append(Individual(
-            cromossome=cromossomes[i], weight=-1, value=-1, fitness=-1))
+            cromossome=cromossomes[i], weight=-1, value=-1))
 
     return population
 
@@ -21,28 +21,31 @@ def generate_population(population_size, backpack_capacity):
 def calculate_fitness(population, population_size, backpack, backpack_capacity, max_backpack_weight):
     for i in range(population_size):
         cromossome = population[i].cromossome
-        weight, value = calculate_weight_value(cromossome, backpack)
+        weight, value = _calculate_weight_value(cromossome, backpack)
 
         while weight > max_backpack_weight:
             cromossome[randint(0, backpack_capacity - 1)] = 0
-            weight, value = calculate_weight_value(cromossome, backpack)
+            weight, value = _calculate_weight_value(cromossome, backpack)
 
         population[i] = Individual(
-            cromossome=cromossome, weight=weight, value=value, fitness=-1)
+            cromossome=cromossome, weight=weight, value=value)
 
     return population
 
 
 def parent_selection(population, population_size):
-    threshold = randint(0, population_size)
+    threshold = randint(0, population_size-1)
     parents = []
+
+    # select the two biggest fitnessed individuals
 
     for i in range(population_size):
         sum = 0
+        individual = randint(0, population_size-1)
         while sum < threshold:
-            sum += population[i].value
+            sum += population[individual].value
 
-        parents.append(population[i])
+        parents.append(population[individual])
 
     return parents
 
@@ -57,7 +60,6 @@ def apply_crossover(population, population_size, backpack_capacity, crossover_pr
                                     population[parent_b].cromossome[int(backpack_capacity / 2):])),
             weight=-1,
             value=-1,
-            fitness=-1
         )
 
         population[parent_b] = Individual(
@@ -65,7 +67,6 @@ def apply_crossover(population, population_size, backpack_capacity, crossover_pr
                                     population[parent_b].cromossome[int(backpack_capacity / 2):])),
             weight=-1,
             value=-1,
-            fitness=-1
         )
 
     return population
@@ -87,13 +88,12 @@ def apply_mutation(population, population_size, backpack_capacity, mutation_prob
             cromossome=cromossome,
             weight=-1,
             value=-1,
-            fitness=-1
         )
 
     return population
 
 
-def calculate_weight_value(cromossome, backpack):
+def _calculate_weight_value(cromossome, backpack):
     weight = 0
     value = 0
 
@@ -105,7 +105,7 @@ def calculate_weight_value(cromossome, backpack):
     return weight, value
 
 
-def calculate_total_value(population):
+def _calculate_total_value(population):
     value = 0
     for individual in population:
         value += individual.value
