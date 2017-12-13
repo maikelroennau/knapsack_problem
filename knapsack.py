@@ -11,15 +11,14 @@ from utils import (apply_crossover, apply_mutation, calculate_fitness,
 def find_solution(population):
     fitnessed_population = calculate_fitness(population, population_size, backpack, backpack_capacity, max_backpack_weight)
     selected_parents = parent_selection(fitnessed_population, population_size)
-    crossovered_population = apply_crossover(selected_parents, population_size, backpack_capacity, crossover_probability)
-    mutated_population = apply_mutation(crossovered_population, population_size, backpack_capacity, mutation_probability)
-    fitnessed_population = calculate_fitness(mutated_population, population_size, backpack, backpack_capacity, max_backpack_weight)
+    crossovered_population = apply_crossover(selected_parents, population_size, backpack_capacity, crossover_probability, mutation_probability)
+    fitnessed_population = calculate_fitness(crossovered_population, population_size, backpack, backpack_capacity, max_backpack_weight)
 
-    return mutated_population
+    return fitnessed_population
 
 
 if __name__ == "__main__":
-    max_generations = 3000
+    max_generations = 1000
 
     backpack_capacity = 20
     max_backpack_weight = 100
@@ -57,8 +56,6 @@ if __name__ == "__main__":
         
         if i % 100 == 0:
             print i
-
-        evolved_population.sort(key=lambda x: x[2], reverse=True)
         
         xdata.append(i)
         ydata.append(evolved_population[0].value)

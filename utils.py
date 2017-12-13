@@ -30,67 +30,70 @@ def calculate_fitness(population, population_size, backpack, backpack_capacity, 
         population[i] = Individual(
             cromossome=cromossome, weight=weight, value=value)
 
+    population.sort(key=lambda x: x[2], reverse=True)
+
     return population
 
 
 def parent_selection(population, population_size):
-    threshold = randint(0, population_size-1)
-    parents = []
+    return population[0:int(population_size*0.25)]
 
-    # select the two biggest fitnessed individuals
 
-    for i in range(population_size):
-        sum = 0
-        individual = randint(0, population_size-1)
-        while sum < threshold:
-            sum += population[individual].value
+def apply_crossover(parents, population_size, backpack_capacity, crossover_probability, mutation_probability):
+    substitution = 0
 
-        parents.append(population[individual])
+    offspring = []
+    while int(len(parents) / 2) + len(offspring) <= population_size:
+        if randint(0, 100) <= crossover_probability * 100:
+            parent_a = randint(0, len(parents) - 1)
+            parent_b = randint(0, len(parents) - 1)
+
+            substitution += 1
+            offspring.append(Individual(
+                cromossome=concatenate((parents[parent_a].cromossome[:int(backpack_capacity / 2)],
+                                        parents[parent_b].cromossome[int(backpack_capacity / 2):])),
+                weight=-1,
+                value=-1
+            ))
+
+            substitution += 1
+            offspring.append(Individual(
+                cromossome=concatenate((parents[parent_a].cromossome[int(backpack_capacity / 2):],
+                                        parents[parent_b].cromossome[:int(backpack_capacity / 2)])),
+                weight=-1,
+                value=-1
+            ))
+
+    len(parents)
+    len(offspring)
+    offspring = apply_mutation(offspring, backpack_capacity, mutation_probability)
 
     return parents
 
 
-def apply_crossover(population, population_size, backpack_capacity, crossover_probability):
-    for i in range(int(population_size * crossover_probability)):
-        parent_a = randint(0, population_size - 1)
-        parent_b = randint(0, population_size - 1)
+def apply_mutation(mutation_population, backpack_capacity, mutation_probability):
+    mutation_population_size = len(mutation_population)
 
-        population[parent_a] = Individual(
-            cromossome=concatenate((population[parent_a].cromossome[0:int(backpack_capacity / 2)],
-                                    population[parent_b].cromossome[int(backpack_capacity / 2):])),
-            weight=-1,
-            value=-1,
-        )
+    for i in range(mutation_population_size):
+        if randint(0, 100) <= mutation_probability * 100:
 
-        population[parent_b] = Individual(
-            cromossome=concatenate((population[parent_a].cromossome[0:int(backpack_capacity / 2)],
-                                    population[parent_b].cromossome[int(backpack_capacity / 2):])),
-            weight=-1,
-            value=-1,
-        )
+            cromossome = mutation_population[i].cromossome
 
-    return population
+            genes = randint(0, backpack_capacity - 1)
 
+            for i in range(genes):
+                if cromossome[randint(0, backpack_capacity - 1)] == 0:
+                    cromossome[randint(0, backpack_capacity - 1)] = 1
+                else:
+                    cromossome[randint(0, backpack_capacity - 1)] = 0
 
-def apply_mutation(population, population_size, backpack_capacity, mutation_probability):
-    for i in range(int(population_size * mutation_probability)):
-        individual = randint(0, population_size - 1)
-        gene = randint(0, backpack_capacity - 1)
+            mutation_population[i] = Individual(
+                cromossome=cromossome,
+                weight=-1,
+                value=-1
+            )
 
-        cromossome = population[individual].cromossome
-
-        if cromossome[gene] == 0:
-            cromossome[gene] = 1
-        else:
-            cromossome[gene] = 0
-
-        population[individual] = Individual(
-            cromossome=cromossome,
-            weight=-1,
-            value=-1,
-        )
-
-    return population
+    return mutation_population
 
 
 def _calculate_weight_value(cromossome, backpack):
