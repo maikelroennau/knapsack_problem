@@ -102,12 +102,12 @@ if __name__ == "__main__":
             items.append(Item(weight=weight, value=value))
     elif option == 2:
         
-        population_size = randint(100, 200)
-        max_generations = randint(10, 100)
-        crossover_probability = round(random.uniform(), 1)
-        mutation_probability = round(random.uniform(), 1)
-        backpack_capacity = randint(2, 20)
-        max_weight = randint(1, 100)
+        population_size = randint(50, 200)
+        max_generations = randint(100, 1000)
+        crossover_probability = round(random.uniform(low=0.3, high=1.0), 1)
+        mutation_probability = round(random.uniform(low=0.0, high=0.5), 1)
+        backpack_capacity = randint(10, 20)
+        max_weight = randint(50, 100)
 
         max_item_weight = 15
         max_item_value = 100
