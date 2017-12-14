@@ -1,4 +1,5 @@
 import collections
+from random import shuffle
 
 from numpy import concatenate
 from numpy.random import randint
@@ -30,20 +31,25 @@ def calculate_fitness(population, population_size, backpack, backpack_capacity, 
         population[i] = Individual(
             cromossome=cromossome, weight=weight, value=value)
 
-    population.sort(key=lambda x: x[2], reverse=True)
+    # population.sort(key=lambda x: x[2], reverse=True)
 
     return population
 
 
 def parent_selection(population, population_size):
-    return population[0:int(population_size*0.25)]
+    selected_parents = population
+    selected_parents.sort(key=lambda x: x[2], reverse=True)
+    selected_parents = selected_parents[0:int(population_size*0.25)]
+    shuffle(selected_parents)
+
+    return selected_parents
 
 
 def apply_crossover(parents, population_size, backpack_capacity, crossover_probability, mutation_probability):
     substitution = 0
-
     offspring = []
-    while int(len(parents) / 2) + len(offspring) <= population_size:
+
+    while int(len(parents)) + len(offspring) <= population_size:
         if randint(0, 100) <= crossover_probability * 100:
             parent_a = randint(0, len(parents) - 1)
             parent_b = randint(0, len(parents) - 1)
@@ -64,11 +70,12 @@ def apply_crossover(parents, population_size, backpack_capacity, crossover_proba
                 value=-1
             ))
 
-    len(parents)
-    len(offspring)
+    while int(len(parents)) + len(offspring) > population_size:
+        offspring.pop()
+
     offspring = apply_mutation(offspring, backpack_capacity, mutation_probability)
 
-    return parents
+    return parents + offspring
 
 
 def apply_mutation(mutation_population, backpack_capacity, mutation_probability):

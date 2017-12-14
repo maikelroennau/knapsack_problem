@@ -1,4 +1,5 @@
 import collections
+import time
 
 import matplotlib.pyplot as plt
 from numpy import random
@@ -9,6 +10,11 @@ from utils import (apply_crossover, apply_mutation, calculate_fitness,
 
 
 def find_solution(population):
+    fitnessed_population = []
+    selected_parents = []
+    crossovered_population = []
+    fitnessed_population = []
+
     fitnessed_population = calculate_fitness(population, population_size, backpack, backpack_capacity, max_backpack_weight)
     selected_parents = parent_selection(fitnessed_population, population_size)
     crossovered_population = apply_crossover(selected_parents, population_size, backpack_capacity, crossover_probability, mutation_probability)
@@ -22,19 +28,19 @@ if __name__ == "__main__":
 
     backpack_capacity = 20
     max_backpack_weight = 100
-    max_backpack_value = 0
+    max_backpack_value = 1000
     backpack = []
-    population_size = 200
+    population_size = 500
 
-    crossover_probability = 0.85
-    mutation_probability = 0.1
+    crossover_probability = 1.0
+    mutation_probability = 0.0
 
     Item = collections.namedtuple('backpack', 'weight value')
     Individual = collections.namedtuple(
         'population', 'cromossome weight value')
 
     for i in range(backpack_capacity):
-        backpack.append(Item(weight=randint(1, 15), value=randint(0, 100)))
+        backpack.append(Item(weight=randint(1, max_backpack_weight), value=randint(0, 300)))
 
     for item in backpack:
         max_backpack_value += item.value
@@ -42,26 +48,30 @@ if __name__ == "__main__":
     random.seed(22)
     evolved_population = generate_population(population_size, backpack_capacity)
 
-    xdata = []
-    ydata = []
-    plt.show()
-
-    axes = plt.gca()
-    axes.set_xlim(0, max_generations)
-    axes.set_ylim(0, +max_backpack_value)
-    line, = axes.plot(xdata, ydata, 'r-')
+    value = []
+    weight = []
+    iteraction = []
 
     for i in range(max_generations):
         evolved_population = find_solution(evolved_population)
-        
+
+        highest_value = 0
+        highest_value_weight = 0
+
+        for solution in evolved_population:
+            if solution.value > highest_value:
+                highest_value = solution.value
+                highest_value_weight = solution.weight
+
         if i % 100 == 0:
-            print i
-        
-        xdata.append(i)
-        ydata.append(evolved_population[0].value)
-        line.set_xdata(xdata)
-        line.set_ydata(ydata)
-        plt.draw()
+            print i, highest_value, highest_value_weight
 
+        value.append(highest_value)
+        weight.append(highest_value_weight)
+        iteraction.append(i)
+
+    plt.plot(iteraction, value)
+    # plt.plot(iteraction, weight)
+    plt.xlabel('Generation')
+    plt.ylabel('Value')
     plt.show()
-
