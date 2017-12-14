@@ -5,7 +5,6 @@ from random import shuffle
 from numpy import concatenate
 from numpy.random import randint
 
-# Item = collections.namedtuple('backpack', 'weight value')
 Individual = collections.namedtuple('population', 'cromossome weight value')
 
 
@@ -23,14 +22,14 @@ def generate_population(size, backpack_capacity):
             )
         )
 
-    
+
     return new_population
 
 
 def calculate_fitness(population, items, max_weight):
     for i in range(len(population)):
         for j in range(len(items)):
-            
+
             cromossome = population[i].cromossome
             weight, value = _calculate_weight_value(cromossome, items)
 
@@ -39,7 +38,7 @@ def calculate_fitness(population, items, max_weight):
                 weight, value = _calculate_weight_value(cromossome, items)
 
             population[i] = Individual(cromossome=cromossome, weight=weight, value=value)
-    
+
     return population
 
 
@@ -47,18 +46,18 @@ def parent_selection(population):
     parents = []
     total_value = 0
 
+    for individual in population:
+        total_value += individual.value
+
     highest, second_highest = find_two_fittest_individuals(population)
     parents.append(highest)
     parents.append(second_highest)
-
-    for individual in population:
-        total_value += individual.value
 
     sum_value = 0
     while len(parents) < len(population):
         individual = randint(0, len(population)-1)
         sum_value += population[individual].value
-        
+
         if sum_value >= total_value:
             parents.append(population[individual])
 
@@ -79,7 +78,7 @@ def apply_crossover(population, backpack_capacity, crossover_probability, mutati
 
             cromossome_b = concatenate((population[parent_a].cromossome[int(backpack_capacity / 2):],
                                         population[parent_b].cromossome[:int(backpack_capacity / 2)]))
-            cromossome_b = apply_mutation(cromossome_b, backpack_capacity, mutation_probability)  
+            cromossome_b = apply_mutation(cromossome_b, backpack_capacity, mutation_probability)
 
 
             crossovered_population.append(Individual(
@@ -99,7 +98,7 @@ def apply_crossover(population, backpack_capacity, crossover_probability, mutati
 
 def apply_mutation(cromossome, backpack_capacity, mutation_probability):
     if randint(0, 100) <= mutation_probability * 100:
-        genes = randint(0, backpack_capacity-1)
+        genes = randint(0, 2)
 
         for i in range(genes):
             gene = randint(0, backpack_capacity-1)
@@ -139,16 +138,3 @@ def find_two_fittest_individuals(population):
             second_highest_index = i
 
     return population[highest_index], population[second_highest_index]
-
-
-def check_fitness_percentage(population):
-    occurrances = Counter([x.value for x in population])
-    percentage = Counter(occurrances.values())
-
-
-def _calculate_total_value(population):
-    value = 0
-    for individual in population:
-        value += individual.value
-
-    return value
