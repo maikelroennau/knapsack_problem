@@ -13,11 +13,12 @@ Item = collections.namedtuple('backpack', 'weight value')
 
 
 def find_solution():
+    print '\n\n## Searching for the best solution '
     population = generate_population(population_size, backpack_capacity)
 
     value = []
     iteraction = []
-    best_solution = []
+    best_solution = None
 
     for i in range(max_generations):
         fitness = calculate_fitness(population, items, max_weight)
@@ -25,18 +26,25 @@ def find_solution():
         crossovered = apply_crossover(parents, backpack_capacity, crossover_probability, mutation_probability)
         population = calculate_fitness(crossovered, items, max_weight)
 
-
-        highest_new, _ = find_two_fittest_individuals(population)
-        if len(best_solution) == 0:
-            best_solution = highest_new
-        elif highest_new.value > best_solution.value:
-            best_solution = highest_new
+        candidate, _ = find_two_fittest_individuals(population)
+        if best_solution is None:
+            best_solution = candidate
+        elif candidate.value > best_solution.value:
+            best_solution = candidate
 
         value.append(best_solution.value)
         iteraction.append(i)
 
         if i % 100 == 0:
-            print i, best_solution.value
+            print '\nCurrent generation..: {}'.format(i)
+            print 'Best solution so far: {}'.format(best_solution.value)
+
+    
+    print '\n\n## Best solution found:'
+    print '\nWeight: {}'.format(best_solution.weight)
+    print 'Value.: {}'.format(best_solution.value)
+    print '\nBackpack configuration: {}'.format(best_solution.cromossome)
+
 
     plt.plot(iteraction, value)
     plt.xlabel('Generation')
@@ -45,29 +53,84 @@ def find_solution():
 
 
 if __name__ == "__main__":
-    max_generations = 1000
-    population_size = 200
+    print '### Knapsack problem'
 
-    crossover_probability = 0.7
-    mutation_probability = 0.1
+    option = 0
 
-    backpack_capacity = 20
-    max_weight = 80
+    print '\nSelect an execution option:'
+    print '\t1 - Insert data manually'
+    print '\t2 - Automatic generate data'
+    print '\n\tOption: ',
+    option = input()
 
-    max_item_weight = 15
-    max_item_value = 100
+    if option == 1:
 
-    max_backpack_value = 0
+        print '\nInsert the population size: ',
+        population_size = input()
 
-    items = []
-    population = []
+        print '\nInsert the number of generations: ',
+        max_generations = input()
 
-    for i in range(backpack_capacity):
-        items.append(
+        print '\nInsert the crossover probability (0.0 to 1.0): ',
+        crossover_probability = input()
+
+        print '\nInsert the mutation probability (0.0 to 1.0): ',
+        mutation_probability = input()
+        
+        print '\nInsert the number of items (backpack capacity): ',
+        backpack_capacity = input()
+
+        print '\nInsert the max weight for the backpack: ',
+        max_weight = input()
+
+
+        print "\n\n## Setting the items up"
+        items = []
+        
+        for i in range(backpack_capacity):
+            weight = 0
+            value = 0
+
+            print '\nItem number {}: '.format(i+1)
+            
+            print '\tWeight: ',
+            weight = input()
+
+            print '\tValue.: ',
+            value = input()
+
+            items.append(Item(weight=weight, value=value))
+    elif option == 2:
+        
+        population_size = randint(100, 200)
+        max_generations = randint(10, 100)
+        crossover_probability = round(random.uniform(), 1)
+        mutation_probability = round(random.uniform(), 1)
+        backpack_capacity = randint(2, 20)
+        max_weight = randint(1, 100)
+
+        max_item_weight = 15
+        max_item_value = 100
+
+        items = []
+        for i in range(backpack_capacity):
+            items.append(
             Item(
-                weight=randint(1, max_item_weight),
+                weight=randint(1, max_item_weight), 
                 value=randint(0, max_item_value)
             )
         )
+    
+    else:
+        print '\nInvalid option!'
+        exit(1)        
+
+    print '\n\n## Parameters'
+    print 'Population size......: {}' .format(population_size)
+    print 'Number of generations: {}'.format(max_generations)
+    print 'Crossover probability: {}'.format(crossover_probability)
+    print 'Mutation probability.: {}'.format(mutation_probability)
+    print 'Backpack capacity....: {}'.format(backpack_capacity)
+    print 'Max backpack weight..: {}'.format(max_weight)
 
     find_solution()
